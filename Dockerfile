@@ -1,4 +1,4 @@
-FROM golang:latest AS build
+FROM golang:latest as build
 RUN go get github.com/eclipse/paho.mqtt.golang && \
     go get github.com/mxk/go-imap/imap && \
     go get github.com/gorilla/mux
