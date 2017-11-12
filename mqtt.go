@@ -40,6 +40,7 @@ func init() {
 func runMqtt(reqUpdate chan int) error {
 	mqttClient = mqtt.NewClient(&mqttOpts)
 
+	fmt.Fprintf(os.Stdout, "mqtt: connecting to %s\n", mqttOpts.Servers[0])
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
 		err := token.Error()
 		fmt.Fprintf(os.Stderr, "mqtt: failed to connect. %s\n", err)

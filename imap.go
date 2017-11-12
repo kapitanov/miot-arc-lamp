@@ -63,11 +63,14 @@ func fetchImapStatus() (*imapStatus, error) {
 
 func imapConnect() error {
 	var err error
+
+	fmt.Fprintf(os.Stdout, "imap: dialing %s\n", imapAddr)
 	if strings.HasSuffix(imapAddr, ":993") {
 		imapClient, err = imap.DialTLS(imapAddr, nil)
 	} else {
 		imapClient, err = imap.Dial(imapAddr)
 	}
+
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "imap: failed to dial. %s\n", err)
 		imapClient = nil
@@ -75,6 +78,7 @@ func imapConnect() error {
 	}
 
 	if imapClient.Caps["STARTTLS"] {
+		fmt.Fprintf(os.Stdout, "imap: starting tls\n")
 		_, err = check(imapClient.StartTLS(nil))
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "imap: tls error. %s\n", err)
@@ -83,6 +87,7 @@ func imapConnect() error {
 		}
 	}
 
+	fmt.Fprintf(os.Stdout, "imap: logging in as %s\n", imapUsername)
 	_, err = check(imapClient.Login(imapUsername, imapPassword))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "imap: login error. %s\n", err)
