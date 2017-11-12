@@ -2,9 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
+)
+
+const (
+	httpEndpoint = "0.0.0.0:3000"
 )
 
 func runHttp() {
@@ -14,7 +20,8 @@ func runHttp() {
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./www")))
 
 	go func() {
-		http.ListenAndServe(":3000", r)
+		fmt.Fprintf(os.Stdout, "http: listening on \"%s\"\n", httpEndpoint)
+		http.ListenAndServe(httpEndpoint, r)
 	}()
 }
 

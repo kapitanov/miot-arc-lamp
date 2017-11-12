@@ -19,6 +19,9 @@ func main() {
 		log.Fatalln("failed to connect to mqtt")
 	}
 
+	// Run HTTP server
+	runHttp()
+
 	// Start background updates
 	go func() {
 		for {
@@ -32,9 +35,6 @@ func main() {
 			updateStatus()
 		}
 	}()
-
-	// Run HTTP server
-	runHttp()
 
 	// Wait for exit
 	ch := make(chan bool)

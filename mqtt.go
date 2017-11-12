@@ -53,6 +53,14 @@ func runMqtt(reqUpdate chan int) error {
 		go func() { mqttPublish() }()
 	})
 
+	// if token.Wait() && token.Error() != nil {
+	// 	err := token.Error()
+	// 	fmt.Fprintf(os.Stderr, "mqtt: failed to subscribe to \"%s\". %s\n", topicRequest, err)
+	// 	return err
+	// }
+
+	//	fmt.Fprintf(os.Stdout, "mqtt: subscribed to \"%s\"\n", topicRequest)
+
 	mqttPublish()
 
 	return nil
@@ -74,5 +82,5 @@ func mqttPublish() {
 		fmt.Fprintf(os.Stderr, "mqtt: failed to publish. %s\n", err)
 	}
 
-	fmt.Fprintf(os.Stdout, "mqtt: sent msg to %s\n", topicPush)
+	fmt.Fprintf(os.Stdout, "mqtt: published msg to %s\n", topicPush)
 }
