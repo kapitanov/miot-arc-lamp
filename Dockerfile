@@ -5,7 +5,7 @@ RUN go get github.com/eclipse/paho.mqtt.golang && \
 ADD . /go/src/github.com/kapitanov/miot-arc-lamp
 WORKDIR /go/src/github.com/kapitanov/miot-arc-lamp
 RUN go get
-RUN go build -o miot-arc-lamp . 
+RUN CGO_ENABLED=0 go build -o miot-arc-lamp . 
 
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
