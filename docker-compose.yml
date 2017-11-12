@@ -1,0 +1,18 @@
+version: '2'
+services:
+  arc-lamp:
+    build: .
+    container_name: arc_lamp
+    restart: always
+    env_file: ./.env
+    logging: 
+      options: 
+        max-size: '100m'
+        max-file: '1'
+    environment: 
+      VIRTUAL_HOST: 'arc.${HOSTNAME}'
+      VIRTUAL_PORT: '3000'
+networks: 
+  default:
+    external:
+      name: miot
