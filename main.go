@@ -55,7 +55,10 @@ func updateStatus() error {
 }
 
 func evaluateStatus(s *imapStatus) *ArcStatus {
-	if s.unreadCount == 0 {
+	switch s.unreadCount {
+	case 0:
+		// Ring: on
+		// Core: blue
 		return &ArcStatus{
 			Ring:        lsOn,
 			CoreRed:     lsOff,
@@ -64,36 +67,53 @@ func evaluateStatus(s *imapStatus) *ArcStatus {
 			UnreadCount: s.unreadCount,
 			Message:     "No unread messages",
 		}
-	}
 
-	if s.unreadCount == 1 {
+	case 1:
+		// Ring: on
+		// Core: blue (blink)
 		return &ArcStatus{
 			Ring:        lsOn,
 			CoreRed:     lsOff,
 			CoreGreen:   lsOff,
 			CoreBlue:    lsBlink,
 			UnreadCount: s.unreadCount,
-			Message:     "One unread message",
+			Message:     "1 unread message",
 		}
-	}
 
-	if s.unreadCount < 3 {
+	case 2:
+		// Ring: on
+		// Core: yellow (blink)
+		return &ArcStatus{
+			Ring:        lsOn,
+			CoreRed:     lsBlink,
+			CoreGreen:   lsBlink,
+			CoreBlue:    lsOff,
+			UnreadCount: s.unreadCount,
+			Message:     "2 unread messages",
+		}
+
+	case 3:
+		// Ring: on
+		// Core: red (blink)
 		return &ArcStatus{
 			Ring:        lsOn,
 			CoreRed:     lsBlink,
 			CoreGreen:   lsOff,
 			CoreBlue:    lsOff,
 			UnreadCount: s.unreadCount,
+			Message:     "3 unread messages",
+		}
+
+	default:
+		// Ring: on
+		// Core: yellow-red
+		return &ArcStatus{
+			Ring:        lsBlink,
+			CoreRed:     lsOn,
+			CoreGreen:   lsBlink,
+			CoreBlue:    lsOff,
+			UnreadCount: s.unreadCount,
 			Message:     fmt.Sprintf("%d unread messages", s.unreadCount),
 		}
-	}
-
-	return &ArcStatus{
-		Ring:        lsBlink,
-		CoreRed:     lsOn,
-		CoreGreen:   lsOff,
-		CoreBlue:    lsOff,
-		UnreadCount: s.unreadCount,
-		Message:     fmt.Sprintf("%d unread messages", s.unreadCount),
 	}
 }
