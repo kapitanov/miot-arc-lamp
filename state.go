@@ -49,6 +49,7 @@ func setStatus(status *ArcStatus) bool {
 			currentStatus.Ring, currentStatus.CoreRed, currentStatus.CoreGreen, currentStatus.CoreBlue,
 			status.Ring, status.CoreRed, status.CoreGreen, status.CoreBlue)
 		currentStatus = status
+		return true
 	}
 
 	return false
