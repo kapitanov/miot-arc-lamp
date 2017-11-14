@@ -15,10 +15,12 @@ const (
 )
 
 type ArcStatus struct {
-	Ring      ledState `json:"ring"`
-	CoreRed   ledState `json:"core_r"`
-	CoreGreen ledState `json:"core_g"`
-	CoreBlue  ledState `json:"core_b"`
+	Ring        ledState `json:"ring"`
+	CoreRed     ledState `json:"core_r"`
+	CoreGreen   ledState `json:"core_g"`
+	CoreBlue    ledState `json:"core_b"`
+	UnreadCount uint32   `json:"unread"`
+	Message     string   `json:"msg"`
 }
 
 var (
