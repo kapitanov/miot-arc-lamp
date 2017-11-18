@@ -4,7 +4,25 @@ import (
 	"fmt"
 	"log"
 	"time"
+
+	"github.com/joho/godotenv"
 )
+
+var (
+	reqUpdate = make(chan int)
+)
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("env: %s\n", err)
+	} else {
+		log.Printf("env: loaded\n")
+	}
+
+	imapInit()
+	mqttInit()
+}
 
 func main() {
 	// Fetch initial state
@@ -14,8 +32,7 @@ func main() {
 	}
 
 	// Connect to MQTT
-	reqUpdate := make(chan int)
-	err = runMqtt(reqUpdate)
+	err = runMqtt()
 	if err != nil {
 		log.Fatalln("failed to connect to mqtt")
 	}
@@ -48,8 +65,9 @@ func updateStatus() error {
 		return err
 	}
 
-	if setStatus(evaluateStatus(s)) {
-		mqttPublish()
+	status := evaluateStatus(s)
+	if setStatus(status) {
+		mqttPublish(status)
 	}
 	return nil
 }

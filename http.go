@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -16,7 +17,9 @@ const (
 func runHttp() {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/state", httpGetState).Methods("GET")
+	r.HandleFunc("/api/state", httpGetState).Methods("GET")
+	r.HandleFunc("/api/state", httpSetState).Methods("POST")
+	r.HandleFunc("/api/state", httpResetState).Methods("DELETE")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./www")))
 
 	go func() {
@@ -36,4 +39,32 @@ func httpGetState(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func httpSetState(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	bytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	var body ArcStatus
+	err = json.Unmarshal(bytes, &body)
+	if err != nil {
+		panic(err)
+	}
+
+	setTestStatus(&body)
+	mqttPublish(&body)
+	w.WriteHeader(204)
+}
+
+func httpResetState(w http.ResponseWriter, r *http.Request) {
+	resetStatus()
+
+	go func() {
+		reqUpdate <- 0
+	}()
+	w.WriteHeader(204)
 }

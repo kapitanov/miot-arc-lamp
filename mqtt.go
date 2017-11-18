@@ -21,7 +21,7 @@ const (
 	mqttPort = 1883
 )
 
-func init() {
+func mqttInit() {
 	mqttAddr, err := url.Parse(fmt.Sprintf("tcp://%s:%d", os.Getenv("MQTT_HOSTNAME"), mqttPort))
 	if err != nil {
 		panic(err)
@@ -37,7 +37,7 @@ func init() {
 	}
 }
 
-func runMqtt(reqUpdate chan int) error {
+func runMqtt() error {
 	mqttClient = mqtt.NewClient(&mqttOpts)
 
 	fmt.Fprintf(os.Stdout, "mqtt: connecting to %s\n", mqttOpts.Servers[0])
@@ -50,28 +50,24 @@ func runMqtt(reqUpdate chan int) error {
 	fmt.Fprintf(os.Stdout, "mqtt: connected\n")
 	mqttClient.Subscribe(topicRequest, 0, func(_ mqtt.Client, msg mqtt.Message) {
 		fmt.Fprintf(os.Stdout, "mqtt: recv. %s/%d\n", msg.Topic(), msg.MessageID())
-		go func() { mqttPublish() }()
+		go func() { mqttPublish(nil) }()
 	})
 
-	// if token.Wait() && token.Error() != nil {
-	// 	err := token.Error()
-	// 	fmt.Fprintf(os.Stderr, "mqtt: failed to subscribe to \"%s\". %s\n", topicRequest, err)
-	// 	return err
-	// }
-
-	//	fmt.Fprintf(os.Stdout, "mqtt: subscribed to \"%s\"\n", topicRequest)
-
-	mqttPublish()
+	mqttPublish(nil)
 
 	return nil
 }
 
-func mqttPublish() {
+func mqttPublish(status *ArcStatus) {
 	if mqttClient == nil {
 		return
 	}
 
-	bytes, err := json.Marshal(currentStatus)
+	if status == nil {
+		status = getStatus()
+	}
+
+	bytes, err := json.Marshal(status)
 	if err == nil {
 		token := mqttClient.Publish(topicPush, 0, false, bytes)
 		token.Wait()

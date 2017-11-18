@@ -25,6 +25,7 @@ type ArcStatus struct {
 
 var (
 	currentStatus     *ArcStatus
+	storedStatus      *ArcStatus
 	currentStatusLock sync.Mutex
 )
 
@@ -45,19 +46,39 @@ func setStatus(status *ArcStatus) bool {
 		currentStatus.CoreRed != status.CoreRed ||
 		currentStatus.CoreGreen != status.CoreGreen ||
 		currentStatus.CoreBlue != status.CoreBlue {
-		fmt.Printf("update: [%s,%s,%s,%s] -> [%s,%s,%s,%s] (ring,r,b,g)\n",
-			currentStatus.Ring, currentStatus.CoreRed, currentStatus.CoreGreen, currentStatus.CoreBlue,
-			status.Ring, status.CoreRed, status.CoreGreen, status.CoreBlue)
-		currentStatus = status
-		return true
+		if storedStatus == nil {
+			fmt.Printf("update: [%s,%s,%s,%s] -> [%s,%s,%s,%s] (ring,r,b,g)\n",
+				currentStatus.Ring, currentStatus.CoreRed, currentStatus.CoreGreen, currentStatus.CoreBlue,
+				status.Ring, status.CoreRed, status.CoreGreen, status.CoreBlue)
+			currentStatus = status
+			return true
+		}
+		storedStatus = status
+		return false
 	}
 
 	return false
 }
 
-func getStatus() ArcStatus {
+func getStatus() *ArcStatus {
 	currentStatusLock.Lock()
 	defer currentStatusLock.Unlock()
 
-	return *currentStatus
+	return currentStatus
+}
+
+func setTestStatus(status *ArcStatus) {
+	currentStatusLock.Lock()
+	defer currentStatusLock.Unlock()
+
+	storedStatus = currentStatus
+	currentStatus = status
+}
+
+func resetStatus() {
+	currentStatusLock.Lock()
+	defer currentStatusLock.Unlock()
+
+	currentStatus = storedStatus
+	storedStatus = nil
 }

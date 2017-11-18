@@ -18,7 +18,7 @@ var (
 	lastImapStatus *imapStatus
 )
 
-func init() {
+func imapInit() {
 	imapAddr = os.Getenv("IMAP_ADDR")
 	imapUsername = os.Getenv("IMAP_USERNAME")
 	imapPassword = os.Getenv("IMAP_PASSWORD")

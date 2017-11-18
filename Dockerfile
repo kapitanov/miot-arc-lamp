@@ -11,4 +11,5 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 COPY --from=build /go/src/github.com/kapitanov/miot-arc-lamp/miot-arc-lamp /app/miot-arc-lamp
 COPY --from=build /go/src/github.com/kapitanov/miot-arc-lamp/www /app/www
+EXPOSE 3000
 CMD ["/app/miot-arc-lamp"]

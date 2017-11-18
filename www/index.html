@@ -2,88 +2,173 @@
 <html lang="en">
 
 <head>
+    <title>Arc Reactor Test</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
-    <title>Arc Reactor State</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.13.0/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
 </head>
 
-<body style="background: black" ;>
-    <svg height="100" width="100" style="position: fixed; left: 50%; top: 50%; margin-left: -50px;margin-top: -50px;">
-        <circle id="circle" cx="50" cy="50" r="40" stroke="#00d9d3" stroke-width="10" fill="#ff114d" stroke-dasharray="5,5" />
-      </svg>
+<body style="padding-top: 5rem; ">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="/">Arc Reactor</a>
+    </nav>
+
+    <main role="main" class="container-fluid">
+        <div class="row">
+            <div class="col-md-3" style="min-height: 100px;">
+                <svg height="100" width="100" style="position: absolute; left: 50%; top: 50%; margin-left: -50px;margin-top: -50px;">
+                    <circle cx="50" cy="50" r="50" fill="#000" />
+                    <circle id="ring" cx="50" cy="50" r="40" stroke="#00d9d3" stroke-width="10"  stroke-dasharray="5,5" />                    
+                    <circle id="core" cx="50" cy="50" r="30" fill="#ff114d" />                    
+                </svg>
+            </div>
+            <div class="col-md-9">
+                <p>
+                    <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#manualControl">
+                        Manual control
+                    </button>
+                </p>
+                <div class="collapse" id="manualControl">
+                    <div class="card card-body">
+                        <form>
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Ring</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" id="state_ring">
+                                        <option value="off">OFF</option>
+                                        <option value="on">ON</option>
+                                        <option value="blink">BLINK</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Core (red)</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" id="state_core_r">
+                                        <option value="off">OFF</option>
+                                        <option value="on">ON</option>
+                                        <option value="blink">BLINK</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Core (green)</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" id="state_core_g">
+                                        <option value="off">OFF</option>
+                                        <option value="on">ON</option>
+                                        <option value="blink">BLINK</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Core (blue)</label>
+                                <div class="col-sm-10">
+                                    <select class="form-control" id="state_core_b">
+                                        <option value="off">OFF</option>
+                                        <option value="on">ON</option>
+                                        <option value="blink">BLINK</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-sm-6">
+                                    <button type="submit" class="btn btn-block btn-primary">Set</button>
+                                </div>
+                                <div class="col-sm-6">
+                                    <button type="button" class="btn btn-block btn-secondary reset">Reset</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        var state = {};
+        var animFrame = 0;
+
+        function animationStep() {
+            function evalValue(s, on, off) {
+                switch (s) {
+                    case 'off':
+                        return off;
+                    case 'on':
+                        return on;
+                    case 'blink':
+                        return animFrame % 2 === 0 ? on : off;
+                    default:
+                        return off;
+                }
+            }
+
+            document.getElementById('ring').setAttribute('stroke', evalValue(state.ring, '#0ff', '#033'));
+            document.getElementById('core').setAttribute('fill',
+                '#' + evalValue(state.core_r, 'ff', '33') +
+                evalValue(state.core_g, 'ff', '33') +
+                evalValue(state.core_b, 'ff', '33')
+            );
+
+            animFrame++;
+        }
+
+        function update() {
+            $.getJSON('/api/state')
+                .then(function(s) {
+                    state = s;
+                })
+                .fail(function() {})
+                .always(function() {
+                    setTimeout(update, 1000);
+                })
+        }
+
+        function submit() {
+            $.ajax({
+                    url: '/api/state',
+                    method: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    data: JSON.stringify({
+                        ring: $('#state_ring').val(),
+                        core_r: $('#state_core_r').val(),
+                        core_g: $('#state_core_g').val(),
+                        core_b: $('#state_core_b').val(),
+                        unread: 0,
+                        msg: 'Test mode'
+                    })
+                })
+                .then(function() {
+                    update();
+                });
+
+            return false;
+        }
+
+        function reset() {
+            $.ajax({
+                    method: 'DELETE',
+                    url: '/api/state'
+                })
+                .then(function() {
+                    update();
+                });
+        }
+
+        $(function() {
+            update();
+            setInterval(animationStep, 250);
+            $('form').on('submit', submit);
+            $('.reset').on('click', reset);
+        });
+    </script>
 </body>
-
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-<script>
-    function update() {
-        $.getJSON('/state')
-            .then(function(state) {
-                var el = document.getElementById('circle');
-
-                // ring
-                switch (state.ring) {
-                    case 'off':
-                        el.setAttribute('stroke', '#333');
-                        break;
-                    case 'on':
-                        el.setAttribute('stroke', '#0dd');
-                        break;
-                    case 'blink':
-                        el.setAttribute('stroke', '#0ff');
-                        break;
-                }
-
-                // core (RGB)
-                var color = '#';
-                switch (state.core_r) {
-                    case 'off':
-                        color += '33';
-                        break;
-                    case 'on':
-                        color += 'dd';
-                        break;
-                    case 'blink':
-                        color += 'ff';
-                        break;
-                }
-                switch (state.core_g) {
-                    case 'off':
-                        color += '33';
-                        break;
-                    case 'on':
-                        color += 'dd';
-                        break;
-                    case 'blink':
-                        color += 'ff';
-                        break;
-                }
-                switch (state.core_b) {
-                    case 'off':
-                        color += '33';
-                        break;
-                    case 'on':
-                        color += 'dd';
-                        break;
-                    case 'blink':
-                        color += 'ff';
-                        break;
-                }
-
-                el.setAttribute('fill', color);
-            })
-            .fail(function() {
-
-            })
-            .always(function() {
-                setTimeout(update, 1000);
-            })
-    }
-
-    $(function() {
-        update();
-    });
-</script>
 
 </html>
