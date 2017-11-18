@@ -10,7 +10,7 @@ services:
         max-size: '100m'
         max-file: '1'
     environment: 
-      VIRTUAL_HOST: 'arc.${HOSTNAME}'
+      VIRTUAL_HOST: 'arc-ui.${HOSTNAME}'
       VIRTUAL_PORT: '3000'
 networks: 
   default:
