@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	mqttOpts   mqtt.ClientOptions
+	mqttOpts   *mqtt.ClientOptions
 	mqttClient mqtt.Client
 )
 
@@ -26,19 +26,22 @@ func mqttInit() {
 	if err != nil {
 		panic(err)
 	}
-	mqttUsername := os.Getenv("MQTT_USERNAME")
-	mqttPassword := os.Getenv("MQTT_PASSWORD")
 
-	mqttOpts = mqtt.ClientOptions{
-		Servers:  []*url.URL{mqttAddr},
-		ClientID: "moit-arc-lamp",
-		Username: mqttUsername,
-		Password: mqttPassword,
+	mqttOpts = mqtt.NewClientOptions()
+	mqttOpts.Servers = []*url.URL{mqttAddr}
+	mqttOpts.ClientID = "miot-arc-lamp"
+	mqttOpts.Username = os.Getenv("MQTT_USERNAME")
+	mqttOpts.Password = os.Getenv("MQTT_PASSWORD")
+	mqttOpts.OnConnect = func(c mqtt.Client) {
+		mqttClient.Subscribe(topicRequest, 0, func(_ mqtt.Client, msg mqtt.Message) {
+			fmt.Fprintf(os.Stdout, "mqtt: recv. %s/%d\n", msg.Topic(), msg.MessageID())
+			go func() { mqttPublish(nil) }()
+		})
 	}
 }
 
 func runMqtt() error {
-	mqttClient = mqtt.NewClient(&mqttOpts)
+	mqttClient = mqtt.NewClient(mqttOpts)
 
 	fmt.Fprintf(os.Stdout, "mqtt: connecting to %s\n", mqttOpts.Servers[0])
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
@@ -48,11 +51,6 @@ func runMqtt() error {
 	}
 
 	fmt.Fprintf(os.Stdout, "mqtt: connected\n")
-	mqttClient.Subscribe(topicRequest, 0, func(_ mqtt.Client, msg mqtt.Message) {
-		fmt.Fprintf(os.Stdout, "mqtt: recv. %s/%d\n", msg.Topic(), msg.MessageID())
-		go func() { mqttPublish(nil) }()
-	})
-
 	mqttPublish(nil)
 
 	return nil
