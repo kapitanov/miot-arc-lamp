@@ -12,6 +12,7 @@ const (
 	lsOff     ledState = "off"
 	lsOn      ledState = "on"
 	lsBlink   ledState = "blink"
+	lsBlink2  ledState = "blink_2"
 )
 
 type ArcStatus struct {
