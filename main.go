@@ -127,9 +127,9 @@ func evaluateStatus(s *imapStatus) *ArcStatus {
 		// Core: yellow-red
 		return &ArcStatus{
 			Ring:        lsBlink,
-			CoreRed:     lsOn,
-			CoreGreen:   lsBlink,
-			CoreBlue:    lsOff,
+			CoreRed:     lsBlink,
+			CoreGreen:   lsOff,
+			CoreBlue:    lsBlink2,
 			UnreadCount: s.unreadCount,
 			Message:     fmt.Sprintf("%d unread messages", s.unreadCount),
 		}

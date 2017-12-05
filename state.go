@@ -8,11 +8,13 @@ import (
 type ledState string
 
 const (
-	lsInitial ledState = ""
-	lsOff     ledState = "off"
-	lsOn      ledState = "on"
-	lsBlink   ledState = "blink"
-	lsBlink2  ledState = "blink_2"
+	lsInitial    ledState = ""
+	lsOff        ledState = "off"
+	lsOn         ledState = "on"
+	lsBlink      ledState = "blink"
+	lsBlink2     ledState = "blink_2"
+	lsFastBlink  ledState = "fast_blink"
+	lsFastBlink2 ledState = "fast_blink_2"
 )
 
 type ArcStatus struct {
